@@ -48,4 +48,9 @@ jobs:
 
       - name: Upload Test Report
         run:  bash <(curl -s https://codecov.io/bash) -f "app/build/reports/coverage/debug/report.xml"
-        #
+
+      - name: PR CodeCov Report upload
+        uses: danhunsaker/clover-reporter-action@v0.2.17-clover
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          clover-file: ./app/build/reports/coverage/androidTest/debug/connected/report.xml
