@@ -62,8 +62,9 @@ android {
     }
 }
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
-
+task jacocoTaskReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
+    group = "Reporting"
+    description = "Generate Jacoco coverage reports after running tests."
     reports {
         xml {
             enabled(true)
@@ -73,7 +74,23 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
         }
     }
 
-    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+    def fileFilter = [
+            '**/R.class',
+            '**/R$*.class',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*Test*.*',
+            'android/**/*.*',
+            'androidx/**/*.*',
+            '**/view/*.*',
+            '**/data/*.*',
+            '**/data/model/*.*',
+            '**/generated/callback/*.*',
+            '**/lambda$*.class',
+            '**/lambda.class',
+            '**/*lambda.class',
+            '**/*lambda*.class']
+
     def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
 
     sourceDirectories.setFrom(
