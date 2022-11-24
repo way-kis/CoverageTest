@@ -61,6 +61,13 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    testBuildType "debug"
+
+    sourceSets {
+        test {
+            manifest.srcFile 'src/test/AndroidManifest.xml'
+        }
+    }
 }
 
 dependencies {
