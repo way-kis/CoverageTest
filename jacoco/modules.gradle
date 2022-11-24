@@ -34,6 +34,12 @@ project.afterEvaluate {
                             '**/*Test*.*',
                             'android/**/*.*',
                             'androidx/**/*.*',
+                            '**/view/*.*',
+                            '**/generated/callback/*.*',
+                            '**/lambda$*.class',
+                            '**/lambda.class',
+                            '**/*lambda.class',
+                            '**/*lambda*.class',
                             '**/*$ViewInjector*.*',
                             '**/*Dagger*.*',
                             '**/*MembersInjector*.*',
@@ -45,7 +51,7 @@ project.afterEvaluate {
                             '**/R2$*.class',
                             '**/*Directions$*',
                             '**/*Directions.*',
-                            '**/*Binding.*'
+                            '**/*Binding.*',
                     ]
 
                     def jClasses = "${project.buildDir}/intermediates/javac/${variantName}/classes"
