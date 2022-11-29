@@ -1,4 +1,6 @@
-uses: romeovs/lcov-reporter-action@v0.2.16
+uses: ziishaned/jest-reporter-action@v0.0.1
 with:
+  github-token: ${{ secrets.GITHUB_TOKEN }}
+  test-command: "./gradlew coverAllVariants"
   delete-old-comments: true
   filter-changed-files: true
