@@ -19,7 +19,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run Module Coverage
-        run: ./gradlew coverAllVariants
+        run: ./gradlew jacocoTest
 
       - name: Jacoco Report to PR
         id: jacoco
