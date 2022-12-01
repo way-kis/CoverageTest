@@ -24,7 +24,7 @@ jobs:
       - name: Code Coverage Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
-          filename: ${{ github.workspace }}/app/build/reports/jacoco/jacocoTest/jacocoTest.xml
+          filename: app/build/reports/jacoco/jacocoTest/jacocoTest.xml
           badge: true
           fail_below_min: true
           format: markdown
