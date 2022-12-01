@@ -22,8 +22,7 @@ jobs:
         run: ./gradlew jacocoTest
 
       - name: copy
-        run: mkdir jacoco |
-        cp ${{ github.workspace }}/app/build/reports/jacoco/jacocoTest/jacocoTest.xml jacoco/
+        run: mkdir jacoco & cp ${{ github.workspace }}/app/build/reports/jacoco/jacocoTest/jacocoTest.xml jacoco/
 
       - name: Code Coverage Report
         uses: irongut/CodeCoverageSummary@v1.3.0
