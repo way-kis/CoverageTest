@@ -28,4 +28,4 @@ jobs:
         uses: slavcodev/coverage-monitor-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          coverage_path: "${{ github.workspace }}/jacoco/jacocoTest.xml"
+          coverage_path: "jacoco/jacocoTest.xml"
