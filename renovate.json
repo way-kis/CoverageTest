@@ -2,13 +2,5 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
-  ],
-  "fileMatch": [
-    "\\.gradle(\\.kts)?$",
-    "(^|\\/)gradle\\.properties$",
-    "(^|\\/)gradle\\/.+\\.toml$",
-    "\\.versions\\.toml$"
-  ],
-  "timeout": 600,
-  "versioning": "gradle"
+  ]
 }
