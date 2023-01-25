@@ -18,7 +18,7 @@ jobs:
           echo "DIFF=$(echo $diff)" >> $GITHUB_ENV
       - name: print Diff
         run: |
-          echo ${{ env.DIFF }}
+          echo "${{ env.DIFF }}"
       - id: review
         uses: mono-chrome/GPTReviewWorkflow@main
         with:
