@@ -19,3 +19,4 @@ jobs:
         run: |
           echo "${{ steps.release_notes.outputs.release_notes }}" > release_notes.txt
           cat release_notes.txt # This displays the release notes in the GitHub Actions console
+          # test 
