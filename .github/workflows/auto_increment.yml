@@ -21,4 +21,4 @@ jobs:
     steps:
 
     - name: Echo
-      run: echo ${{ github.run_number} }}
+      run: echo ${{ github.run_number }}
