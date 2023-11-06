@@ -24,3 +24,6 @@ jobs:
 
     - name: Echo
       run: echo ${{ github.run_number }}
+
+    - name: Echo Variables
+      run: echo ${{ variables.VARIABLES_TEST }}
