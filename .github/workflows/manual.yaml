@@ -181,7 +181,7 @@ jobs:
           slack_token: ${{ secrets.SLACK_APK_DEPLOY_TOKEN }}
           channel_id: 'C05E9B7MAFP'
           file_type: 'apk'
-          file_path: './app/build/outputs/apk/${{input.target}}/release/app-${{input.target}}-release.apk'
+          file_path: './app/build/outputs/apk/${{inputs.target}}/release/app-${{inputs.target}}-release.apk'
           initial_comment: '버전 : ${{ github.run_number }}'
           delete_file_ids_before_upload: cat run_number.txt
       - name: Create run_number
