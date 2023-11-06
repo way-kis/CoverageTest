@@ -1,0 +1,294 @@
+name: Manual Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Build Target'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - production
+          - staging
+          - dev
+
+concurrency:
+  group: ${{ github.head_ref }}-manual-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: [ self-hosted, android ]
+    steps:
+      - name: Create cache file for checking commit
+        run: |
+          mkdir sha
+          echo ${{ github.sha }} > github-sha.txt
+      - name: Check SHA
+        id: check
+        uses: actions/cache@v2
+        with:
+          path: sha
+          key: sha-${{ github.sha }}
+      - name: Exit when recent commit does not exist
+        if: steps.check.outputs.cache-hit == 'true'
+        run: |
+          echo "::set-output name=cancel::$(echo true)"
+        id: get
+      - uses: actions/checkout@v3
+      - name: Create properties - common
+        run: |
+          mkdir properties
+          echo "${{ secrets.EKYC_SDK_KEY }}" > properties/ekyc-sdk-key.properties
+          echo "${{ vars.SERVER_URLS }}" > properties/server-urls.properties
+          echo "${{ secrets.USER_INFO }}" > properties/user-info.properties
+          echo "${{ secrets.ENCRYPT_KEY }}" > properties/encrypt.properties
+          echo "${{ secrets.NEXUS }}" > properties/nexus.properties
+
+      - name: Create properties - dev
+        if: inputs.target == 'dev'
+        run: |
+          echo "${{ secrets.DEV_SDK_KEYS }}" > properties/sdk-keys.properties
+
+      - name: Create properties - staging
+        if: inputs.target == 'staging'
+        run: |
+          echo "${{ secrets.DEV_SDK_KEYS }}" > properties/sdk-keys.properties
+
+      - name: Create properties - staging
+        if: inputs.target == 'production'
+        run: |
+          echo "${{ secrets.DEV_SDK_KEYS }}" > properties/sdk-keys.properties
+
+      - name: Create local.properties
+        run: |
+          echo sdk.dir=$ANDROID_HOME |> local.properties
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Create Android keystore - dev
+        id: android_keystore
+        uses: timheuer/base64-to-file@v1.2
+        if: inputs.target == 'dev'
+        with:
+          fileName: 'release-key.jks'
+          fileDir: './key-stores'
+          encodedString: ${{ secrets.ANDROID_DEV_KEYSTORE_BASE64 }}
+
+      - name: Create Android keystore - staging
+        id: android_keystore
+        uses: timheuer/base64-to-file@v1.2
+        if: inputs.target == 'staging'
+        with:
+          fileName: 'release-key.jks'
+          fileDir: './key-stores'
+          encodedString: ${{ secrets.ANDROID_DEV_KEYSTORE_BASE64 }}
+
+      - name: Create Android keystore - production
+        id: android_keystore
+        uses: timheuer/base64-to-file@v1.2
+        if: inputs.target == 'production'
+        with:
+          fileName: 'release-key.jks'
+          fileDir: './key-stores'
+          encodedString: ${{ secrets.ANDROID_DEV_KEYSTORE_BASE64 }}
+
+      - name: Create key.properties - dev
+        if: inputs.target == 'dev'
+        run: |
+          echo "${{ secrets.DEV_KEY_PROPERTIES }}" > properties/release-key.properties
+
+      - name: Create key.properties - staging
+        if: inputs.target == 'staging'
+        run: |
+          echo "${{ secrets.DEV_KEY_PROPERTIES }}" > properties/release-key.properties
+
+      - name: Create key.properties - production
+        if: inputs.target == 'production'
+        run: |
+          echo "${{ secrets.DEV_KEY_PROPERTIES }}" > properties/release-key.properties
+
+      - name: Build Apk -dev
+        if: inputs.target == 'dev'
+        id: build
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          retry_on: error
+          command: ./gradlew clean assembleDevRelease -PversionCode=${{ github.run_number }}
+
+      - name: Build Apk -staging
+        if: inputs.target == 'staging'
+        id: build
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          retry_on: error
+          command: ./gradlew clean assembleStagingRelease -PversionCode=${{ github.run_number }}
+
+      - name: Build Apk -production
+        if: inputs.target == 'production'
+        id: build
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          retry_on: error
+          command: ./gradlew clean assembleProductionRelease -PversionCode=${{ github.run_number }}
+
+      - name: upload artifacts
+        id: upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: manual-build
+          path: ./app/build/outputs
+  deploy_slack:
+    runs-on: [ self-hosted , android ]
+    needs: build
+    if: success()
+    continue-on-error: true
+    steps:
+      - name: download apk
+        uses: actions/download-artifact@v3
+        with:
+          name: manual-build
+      - name: move apk
+        run: |
+          mkdir ./app/build/outputs/apk/${{inputs.target}}/release
+          mv app-${{inputs.target}}-release.apk ./app/build/outputs/apk/${{inputs.target}}/release/app-${{inputs.target}}-release.apk
+      - name: Check file existence
+        id: check_files
+        uses: andstor/file-existence-action@v2
+        with:
+          files: "run_number.txt"
+      - name: File not exist
+        if: steps.check_files.outputs.files_exists != 'true'
+        run: |
+          echo "" > run_number.txt
+      - name: File contents
+        run: cat run_number.txt
+      - uses: MeilCli/slack-upload-file@v3
+        id: upload_slack
+        if: success()
+        with:
+          slack_token: ${{ secrets.SLACK_APK_DEPLOY_TOKEN }}
+          channel_id: 'C05E9B7MAFP'
+          file_type: 'apk'
+          file_path: './app/build/outputs/apk/${{input.target}}/release/app-${{input.target}}-release.apk'
+          initial_comment: '버전 : ${{ github.run_number }}'
+          delete_file_ids_before_upload: cat run_number.txt
+      - name: Create run_number
+        run: |
+          mkdir upload_apk
+          echo "${{ steps.upload_slack.outputs.uploaded_file_ids }}" > run_number.txt
+  deploy_firebase:
+    runs-on: [ self-hosted , android]
+    needs: build
+    steps:
+      - name: download apk
+        uses: actions/download-artifact@v3
+        with:
+          name: manual-build
+      - name: move apk
+        run: |
+          mkdir ./app/build/outputs/apk/${{inputs.target}}/release
+          mv app-${{inputs.target}}-release.apk ./app/build/outputs/apk/${{inputs.target}}/release/app-${{inputs.target}}-release.apk
+      - name: Create Upload Folder
+        run: rm -rf upload && mkdir upload
+
+      - name: Create firebase.json - dev
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "firebase-dev.json"
+          json: ${{ secrets.FIREBASE_DEV_JSON }}
+          dir: 'upload/'
+      - name: FirebaseDistribution Upload
+        run: |
+          result=$(./gradlew appDistributionUploadDevRelease -Pfirebase=firebase-dev.json -PfirebaseAppId=${{ secrets.FIREBASE_DEV_APP_ID }})
+
+      - name: Create firebase.json - staging
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "firebase-staging.json"
+          json: ${{ secrets.FIREBASE_DEV_JSON }}
+          dir: 'upload/'
+      - name: FirebaseDistribution Upload
+        run: |
+          result=$(./gradlew appDistributionUploadStagingRelease -Pfirebase=firebase-staging.json -PfirebaseAppId=${{ secrets.FIREBASE_STAGING_APP_ID }})
+
+      - name: Create firebase.json - production
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "firebase-production.json"
+          json: ${{ secrets.FIREBASE_DEV_JSON }}
+          dir: 'upload/'
+      - name: FirebaseDistribution Upload
+        run: |
+          result=$(./gradlew appDistributionUploadProductionRelease -Pfirebase=firebase-production.json -PfirebaseAppId=${{ secrets.FIREBASE_PRODUCTION_APP_ID }})
+
+  post_slack:
+    runs-on: ubuntu-latest
+    needs: [build, deploy_firebase]
+    steps:
+      - name: Logging
+        run: |
+          echo "${{toJSON(github)}}"
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d %H:%M:%S')"
+      - name: Create slack message
+        if: success()
+        id: slack-message
+        uses: actions/github-script@v6.4.1
+        env:
+          COMMITS: ${{ toJSON(github.event.commits) }}
+        with:
+          result-encoding: string
+          script: |
+            var message = "";
+            const commits = process.env.COMMITS;
+            if (commits == 'null') {
+              message = "commit 중 Jira 티켓 내용이 없습니다.";
+            } else {
+              const commitsString = JSON.parse(commits);
+              for (const commit of commitsString) {
+                if (commit.message.includes('VMTS-')) {
+                  message += "- " + commit.message + " (" + commit.author.username + ")\n"
+                }
+              }
+            }
+
+            return message
+      - name: Success slack notify
+        if: success()
+        uses: rtCamp/action-slack-notify@v2.2.1
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_APK_DEPLOY_WEBHOOK_URL }}
+          SLACK_MSG_AUTHOR: 'Deploy ${{ job.status }}'
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: '변경 내용 :fast_parrot:'
+          SLACK_MESSAGE: '${{ steps.slack-message.outputs.result }}'
+          SLACK_FOOTER: ${{ github.event.repository.updated_at}}
+          MSG_MINIMAL: ref
+
+      - name: Fail slack notify
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2.2.1
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_APK_DEPLOY_WEBHOOK_URL }}
+          SLACK_MSG_AUTHOR: 'Deploy ${{ job.status }}'
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: '배포 실패 :scream:'
+          SLACK_MESSAGE: '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          SLACK_FOOTER: ${{ github.event.repository.updated_at}}
+          MSG_MINIMAL: actions url
