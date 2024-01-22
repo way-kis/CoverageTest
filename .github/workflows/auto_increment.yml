@@ -9,6 +9,10 @@ name: Auto Increment
 
 on:
   workflow_call:
+    inputs: 
+      target:
+        required: true
+        type: string
   workflow_dispatch:
   schedule:
     - cron: '0 22 * * 0-4' # UTC +9 KST
@@ -28,3 +32,6 @@ jobs:
 
     - name: Echo Variables
       run: echo ${{ vars.VARIABLES_TEST }}
+
+    - name: Echo target
+      run: echo ${{ inputs.target }}
