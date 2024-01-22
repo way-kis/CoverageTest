@@ -1,34 +1,9 @@
-name: Trigger Other Workflow
+name: AnOther Workflow call 
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Measure coverage"]
-    types:
-      - completed
 
 jobs:
-  trigger:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Other Workflow
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const triggeredWorkflow = 'Measure coverage';
-            const token = process.env.GITHUB_TOKEN;
-            const octokit = new Octokit({ auth: token });
-
-            const { data: workflows } = await octokit.actions.listRepoWorkflows({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-
-            const workflow = workflows.find(w => w.name === triggeredWorkflow);
-            if (workflow) {
-              await octokit.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: workflow.id,
-              });
-            }
+  call-wf1:
+    uses: ./.github/workflows/auto_increment.yml
+    secrets: inherit
