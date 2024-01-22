@@ -6,3 +6,5 @@ on:
 jobs:
   call-auto_increment:
     uses: ./.github/workflows/auto_increment.yml
+    with:
+      target: 'dev'
