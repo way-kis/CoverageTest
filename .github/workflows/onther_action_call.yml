@@ -6,4 +6,3 @@ on:
 jobs:
   call-wf1:
     uses: ./.github/workflows/auto_increment.yml
-    secrets: inherit
