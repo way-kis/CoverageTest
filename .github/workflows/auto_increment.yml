@@ -8,6 +8,7 @@
 name: Auto Increment
 
 on:
+  workflow_call:
   workflow_dispatch:
   schedule:
     - cron: '0 22 * * 0-4' # UTC +9 KST
