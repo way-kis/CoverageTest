@@ -4,5 +4,5 @@ on:
   workflow_dispatch:
 
 jobs:
-  call-wf1:
+  call-auto_increment:
     uses: ./.github/workflows/auto_increment.yml
