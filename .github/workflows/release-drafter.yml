@@ -20,10 +20,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Get current branch name
-        id: branch_name
-        run: echo "::set-output name=branch::$(git rev-parse --abbrev-ref HEAD)"
-
       - name: Add label
         uses: actions/github-script@v4
         with:
@@ -31,7 +27,7 @@ jobs:
           script: |
             var label;
             
-            if( ${{ steps.branch_name.outputs.branch }}.contains('hotfix') ){
+            if( ${{ 'github.event.pull_request.base.ref' }}.contains('hotfix') ){
               label = 'patch';
             } else {
               label = 'minor';
