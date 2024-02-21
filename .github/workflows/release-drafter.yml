@@ -25,10 +25,9 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const requestBranchName = "${{ github.event.pull_request.base.ref }}";
             var label;
-            
-	    console.log(${{ github.event.pull_request.base.ref }});
-            if( '${{ github.event.pull_request.base.ref }}'.indexOf('hotfix') != -1 ){
+            if (requestBranchName.includes('hotfix')) {
               label = 'patch';
             } else {
               label = 'minor';
