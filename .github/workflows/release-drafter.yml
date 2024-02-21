@@ -31,7 +31,7 @@ jobs:
           script: |
             var label;
             
-            if( ${{ steps.branch_name.outputs.branch }} == 'hotfix'){
+            if( ${{ steps.branch_name.outputs.branch }}.contains('hotfix') ){
               label = 'patch';
             } else {
               label = 'minor';
