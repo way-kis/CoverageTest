@@ -27,7 +27,7 @@ jobs:
           script: |
             var label;
             
-            if( ${{ 'github.event.pull_request.base.ref' }}.contains('hotfix') ){
+            if( '${{ github.event.pull_request.base.ref }}'.contains('hotfix') ){
               label = 'patch';
             } else {
               label = 'minor';
