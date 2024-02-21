@@ -1,0 +1,27 @@
+name: Check Branches in Pull Request
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  check-branches:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get PR Branches
+      id: get_branches
+      run: echo "::set-output name=branches::${{ github.event.pull_request.head.ref }}:${{ github.event.pull_request.base.ref }}"
+
+    - name: Compare Branches
+      run: |
+        branches="${{ steps.get_branches.outputs.branches }}"
+        source_branch=$(echo "$branches" | cut -d: -f1)
+        target_branch=$(echo "$branches" | cut -d: -f2)
+
+        if [ "$source_branch" != "$target_branch" ]; then
+          echo "Source branch ($source_branch) and target branch ($target_branch) are different"
+        else
+          echo "Source branch and target branch are the same"
+          exit 1
+        fi
