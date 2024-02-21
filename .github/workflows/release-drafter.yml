@@ -26,17 +26,17 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const requestBranchName = "${{ github.event.pull_request.base.ref }}";
-            var label;
+            var labels;
             if (requestBranchName.includes('hotfix')) {
-              label = 'patch';
+              labels = ['patch'];
             } else {
-              label = 'minor';
+              labels = ['minor'];
             }
             const payload = {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              labels: label
+              labels: labels
             };
             await github.issues.addLabels(payload);
 
