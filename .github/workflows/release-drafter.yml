@@ -20,26 +20,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Add label
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const requestBranchName = "${{ github.event.pull_request.base.ref }}";
-            var labels;
-            if (requestBranchName.includes('hotfix')) {
-              labels = ['patch'];
-            } else {
-              labels = ['minor'];
-            }
-            const payload = {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels: labels
-            };
-            await github.issues.addLabels(payload);
-
       - name: Release drafter
         uses: release-drafter/release-drafter@v5
         with:
