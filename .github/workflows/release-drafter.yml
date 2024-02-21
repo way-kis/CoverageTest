@@ -2,7 +2,7 @@ name: Generate Release Notes
 
 on:
   pull_request_target:
-    types: [ closed ]
+    types: [ closed, edited ]
     branches: [ 'main' ]
 
 jobs:
