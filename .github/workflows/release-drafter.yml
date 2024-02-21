@@ -7,8 +7,8 @@ on:
 
 jobs:
   check-branch:
-    steps:
     runs-on: ubuntu-latest
+    steps:
       - name: check branch
         if: github.event.pull_request.merged == true && github.base_ref == 'main'
         run: echo ${{ github.head_ref }}
