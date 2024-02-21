@@ -1,0 +1,26 @@
+name: auto-version-label
+on: [ pull_request_target ]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add label
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const requestBranchName = "${{ github.event.pull_request.base.ref }}";
+            var labels;
+            if (requestBranchName.includes('hotfix')) {
+              labels = ['patch'];
+            } else {
+              labels = ['minor'];
+            }
+            const payload = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: labels
+            };
+            await github.issues.addLabels(payload);
