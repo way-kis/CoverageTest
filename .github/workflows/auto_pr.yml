@@ -1,0 +1,43 @@
+name: PR Trigger
+
+on:
+  push:
+    branches: ['release/*', 'hotfix/*']
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Get current branch name
+        id: branch_name
+        run: echo "::set-output name=branch::$(git rev-parse --abbrev-ref HEAD)"
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: '${{ steps.branch_name.outputs.branch }} Automated PR'
+          body: 'version : ${{ steps.branch_name.outputs.branch }}\nAutomatically generated PR'
+          branch: '${{ steps.branch_name.outputs.branch }}'
+          base: 'main'
+
+      - name: Add Label to PR
+        if: steps.create_pr.outputs.pull-request-created == 'true' 
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: labels } = await github.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['minor']  # PR에 추가할 레이블을 지정합니다.
+            });
+            console.log(labels);
+
+
