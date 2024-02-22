@@ -205,7 +205,7 @@ jobs:
 
       - name: Create firebase.json - dev
         id: create-json
-        uses: jsdaniell/create-json@v1.2.2
+        uses: jsdaniell/create-json@v1.2.3
         with:
           name: "firebase-dev.json"
           json: ${{ secrets.FIREBASE_DEV_JSON }}
@@ -216,7 +216,7 @@ jobs:
 
       - name: Create firebase.json - staging
         id: create-json
-        uses: jsdaniell/create-json@v1.2.2
+        uses: jsdaniell/create-json@v1.2.3
         with:
           name: "firebase-staging.json"
           json: ${{ secrets.FIREBASE_DEV_JSON }}
@@ -227,7 +227,7 @@ jobs:
 
       - name: Create firebase.json - production
         id: create-json
-        uses: jsdaniell/create-json@v1.2.2
+        uses: jsdaniell/create-json@v1.2.3
         with:
           name: "firebase-production.json"
           json: ${{ secrets.FIREBASE_DEV_JSON }}
