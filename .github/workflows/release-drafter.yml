@@ -23,4 +23,5 @@ jobs:
       - name: Release drafter
         uses: release-drafter/release-drafter@v5
         with:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
           config-name: release-drafter.yml
