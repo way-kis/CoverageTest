@@ -2,7 +2,7 @@ name: Auto Release
 
 on:
   release:
-    types: [created, prereleased]
+    types: [created, prereleased, unpublished]
 
 jobs:
   create-release:
