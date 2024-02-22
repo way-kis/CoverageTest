@@ -11,9 +11,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v1
+      - name: Release 생성 
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
