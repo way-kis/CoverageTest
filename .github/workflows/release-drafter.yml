@@ -29,11 +29,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          config-name: release-drafter.yml
-          version: ${{ steps.get_version.outputs.version }}
-			    tag: ${{ steps.get_version.outputs.version }}
-          publish: true
-
+          config-name: release-drafter.yml 
+	  version: ${{ steps.get_version.outputs.version }}
+	  tag: ${{ steps.get_version.outputs.version }}
+   
       - name: Create PR
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
