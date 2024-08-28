@@ -27,7 +27,7 @@ jobs:
           echo ${{ github.sha }} > github-sha.txt
       - name: Check SHA
         id: check
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: sha
           key: sha-${{ github.sha }}
